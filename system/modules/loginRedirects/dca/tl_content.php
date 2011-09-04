@@ -41,7 +41,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect'] = array(
     'exclude' => true,
     'inputType' => 'multiColumnWizard',
     'save_callback' => array(
-        array("LoginRedirectsCallback", "saveCallChooseMemberRedirect")
+        array("LoginRedirectsCallback", "save_callback")
     ),
     'eval' => array
         (
@@ -52,7 +52,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect'] = array(
                 (
                 'label' => $GLOBALS['TL_LANG']['tl_content']['lr_usergroup'],
                 'inputType' => 'select',
-                'options_callback' => array("LoginRedirectsCallback", "optionCallMemberGroups"),
+                'options_callback' => array("LoginRedirectsCallback", "options_callback"),
                 'eval' => array('mandatory' => true, 'style' => 'width:210px;'),
             ),
             'lr_redirecturl' => array
@@ -82,7 +82,7 @@ class LoginRedirectsCallback extends Backend
      * 
      * @return array 
      */
-    public function optionCallMemberGroups()
+    public function options_callback()
     {
         $arrReturn = array();
 		$arrReturn["all"] = $GLOBALS['TL_LANG']['tl_content']['lr_all_groups'];
@@ -98,13 +98,13 @@ class LoginRedirectsCallback extends Backend
     }
 
     /**
-     * Savecallback. Check if only a group is choosen not once or once.
+     * Check if only a group is choosen not once or once.
      * 
      * @param string $varVal
      * @param DataContainer $dc
      * @return string 
      */
-    public function saveCallChooseMemberRedirect($varVal, DataContainer $dc)
+    public function save_callback($varVal, DataContainer $dc)
     {
         $arrGroups = deserialize($varVal);
         $arrGroupsFound = array();

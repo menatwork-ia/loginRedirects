@@ -69,10 +69,14 @@ class ContentLoginRedirects extends ContentElement
 
         // Get the redirect array
         if (strlen($this->lr_choose_redirect) == 0)
+		{
             return;
+		}
 
         if (count($this->FrontendUser->groups) == 0)
+		{
             return;
+		}
 
         $arrMemberRedirect = deserialize($this->lr_choose_redirect);
         // Get usergroups
@@ -93,9 +97,13 @@ class ContentLoginRedirects extends ContentElement
 
                     //Check if we have a page
                     if (count($arrPage) == 0)
+					{
                         $this->log("Try to redirect, but the necessary page cannot be found in the database.", __FUNCTION__ . " | " . __CLASS__, TL_ERROR);
-                    else
+                    } 
+					else 
+					{
                         $this->redirect($this->generateFrontendUrl($arrPage[0]));
+					}
                 }
             }
         }
