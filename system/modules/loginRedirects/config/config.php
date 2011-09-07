@@ -30,8 +30,7 @@
 /**
  * Content Element
  */
-$GLOBALS['TL_CTE']['miscellaneous'] = array(
-    'loginRedirects' => 'ContentLoginRedirects'
-);
+$GLOBALS['TL_CTE']['miscellaneous']['loginRedirects'] = 'ContentLoginRedirects';
+
 
 ?>
