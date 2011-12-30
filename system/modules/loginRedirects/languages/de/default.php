@@ -30,10 +30,15 @@
 /**
  * Miscellaneous
  */
-$GLOBALS['TL_LANG']['CTE']['loginRedirects'] = array('Login-Weiterleitungen', '');
-$GLOBALS['TL_LANG']['CTE']['miscellaneous'] = 'Verschiedenes';
+$GLOBALS['TL_LANG']['CTE']['loginRedirects']            = array('Login-Weiterleitungen', '');
+$GLOBALS['TL_LANG']['CTE']['miscellaneous']             = 'Verschiedenes';
 
 /**
  * Error
  */
-$GLOBALS['TL_LANG']['ERR']['lr_error_groups'] = 'Es sind Mitgliedergruppen doppelt vorhanden.';
+$GLOBALS['TL_LANG']['ERR']['lr_error_duplicate']        = 'Es sind Einträge doppelt vorhanden.';
+$GLOBALS['TL_LANG']['ERR']['lr_error_unknownGroup']     = 'Unbekannte Gruppe';
+$GLOBALS['TL_LANG']['ERR']['lr_error_unknownMember']    = 'Unbekannter Benutzer';
+$GLOBALS['TL_LANG']['ERR']['lr_error_unknownType']      = 'Unbekannter Type';
+$GLOBALS['TL_LANG']['ERR']['lr_error_unknownPage']      = 'Unbekannte Seite';
+

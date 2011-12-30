@@ -31,15 +31,15 @@
 /**
  * Fields
  */
-$GLOBALS['TL_LANG']['tl_content']['lr_choose_redirect'] = array('Redirect settings', 'Redirect group members to a custom page when they log in.');
-$GLOBALS['TL_LANG']['tl_content']['lr_usergroup'] = array('Member groups', '');
-$GLOBALS['TL_LANG']['tl_content']['lr_redirecturl'] = array('Redirect page', '');
-$GLOBALS['TL_LANG']['tl_content']['lr_all_groups'] = 'All groups';
+$GLOBALS['TL_LANG']['tl_content']['lr_choose_redirect']     = array('Redirect settings', 'Redirect group members to a custom page when they log in.');
+$GLOBALS['TL_LANG']['tl_content']['lr_id']                  = array('Member/Membergroups', '');
+$GLOBALS['TL_LANG']['tl_content']['lr_redirecturl']         = array('Redirect page', '');
+$GLOBALS['TL_LANG']['tl_content']['lr_all']                 = 'All';
 
 /**
  * Legends
  */
-$GLOBALS['TL_LANG']['tl_content']['lr_legend'] = 'Redirects';
+$GLOBALS['TL_LANG']['tl_content']['lr_legend']              = 'Redirects';
 
 
 ?>

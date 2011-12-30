@@ -31,5 +31,5 @@
 /**
  * Title
  */
-$GLOBALS['TL_LANG']['MOD']['loginRedirects'] = array('Login redirects');
+$GLOBALS['TL_LANG']['MOD']['loginRedirects']        = array('Login redirects');
 

@@ -30,7 +30,6 @@
 /**
  * Content Element
  */
-$GLOBALS['TL_CTE']['miscellaneous']['loginRedirects'] = 'ContentLoginRedirects';
-
+$GLOBALS['TL_CTE']['miscellaneous']['loginRedirects'] = 'LoginRedirects';
 
 ?>

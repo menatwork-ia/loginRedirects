@@ -31,5 +31,5 @@
 /**
  * Title
  */
-$GLOBALS['TL_LANG']['MOD']['loginRedirects'] = array('Login-Weiterleitungen');
+$GLOBALS['TL_LANG']['MOD']['loginRedirects']        = array('Login-Weiterleitungen');
 

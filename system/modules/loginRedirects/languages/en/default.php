@@ -30,10 +30,14 @@
 /**
  * Miscellaneous
  */
-$GLOBALS['TL_LANG']['CTE']['loginRedirects'] = array('Login redirects', '');
-$GLOBALS['TL_LANG']['CTE']['miscellaneous'] = 'Miscellaneous';
+$GLOBALS['TL_LANG']['CTE']['loginRedirects']            = array('Login redirects', '');
+$GLOBALS['TL_LANG']['CTE']['miscellaneous']             = 'Miscellaneous';
 
 /**
  * Error
  */
-$GLOBALS['TL_LANG']['ERR']['lr_error_groups'] = 'You have a usergroup twice or more in the list.';
+$GLOBALS['TL_LANG']['ERR']['lr_error_duplicate']        = 'There is a duplicate entry.';
+$GLOBALS['TL_LANG']['ERR']['lr_error_unknownGroup']     = 'Unknown group';
+$GLOBALS['TL_LANG']['ERR']['lr_error_unknownMember']    = 'Unknown user';
+$GLOBALS['TL_LANG']['ERR']['lr_error_unknownType']      = 'Unknown type';
+$GLOBALS['TL_LANG']['ERR']['lr_error_unknownPage']      = 'Unknown page';

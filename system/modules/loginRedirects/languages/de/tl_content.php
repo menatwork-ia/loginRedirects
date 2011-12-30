@@ -31,15 +31,15 @@
 /**
  * Fields
  */
-$GLOBALS['TL_LANG']['tl_content']['lr_choose_redirect'] = array('Einstellungen', 'Mitglieder der Gruppe(n) bei der Anmeldung zu einer individuellen Seite weiterleiten.');
-$GLOBALS['TL_LANG']['tl_content']['lr_usergroup'] = array('Mitgliedergruppe', '');
-$GLOBALS['TL_LANG']['tl_content']['lr_redirecturl'] = array('Weiterleitungsseite', '');
-$GLOBALS['TL_LANG']['tl_content']['lr_all_groups'] = 'Alle Gruppen';
+$GLOBALS['TL_LANG']['tl_content']['lr_choose_redirect']     = array('Mitglieder/Mitgliedergruppen', 'Mitglieder oder deren Gruppe(n) bei der Anmeldung zu einer individuellen Seite weiterleiten.');
+$GLOBALS['TL_LANG']['tl_content']['lr_id']                  = array('Mitglieder/Mitgliedergruppe', '');
+$GLOBALS['TL_LANG']['tl_content']['lr_redirecturl']         = array('Weiterleitungsseite', '');
+$GLOBALS['TL_LANG']['tl_content']['lr_all']                 = 'Alle';
 
 /**
  * Legends
  */
-$GLOBALS['TL_LANG']['tl_content']['lr_legend'] = 'Weiterleitungen';
+$GLOBALS['TL_LANG']['tl_content']['lr_legend']              = 'Weiterleitungen';
 
 
 ?>

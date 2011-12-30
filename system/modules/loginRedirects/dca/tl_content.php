@@ -24,7 +24,7 @@ if (!defined('TL_ROOT'))
  * Software Foundation website at <http://www.gnu.org/licenses/>.
  *
  * PHP version 5
- * @copyright  MEN AT WORK 2011, certo web & design GmbH 2011 
+ * @copyright  MEN AT WORK 2011 
  * @package    loginRedirects 
  * @license    LGPL 
  * @filesource
@@ -33,37 +33,32 @@ if (!defined('TL_ROOT'))
  * Table tl_content
  */
 // Palettes
-$GLOBALS['TL_DCA']['tl_content']['palettes']["loginRedirects"] = '{type_legend},type;{lr_legend},lr_choose_redirect;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
+$GLOBALS['TL_DCA']['tl_content']['palettes']['loginRedirects'] = '{type_legend},type;{lr_legend},lr_choose_redirect;{protected_legend:hide},protected;{expert_legend:hide},guests,cssID,space;';
 
 // Fields
 $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect'] = array(
-    'label' => $GLOBALS['TL_LANG']['tl_content']['lr_choose_redirect'],
-    'exclude' => true,
-    'inputType' => 'multiColumnWizard',
+    'label'                         => $GLOBALS['TL_LANG']['tl_content']['lr_choose_redirect'],
+    'exclude'                       => true,
+    'inputType'                     => 'multiColumnWizard',
     'save_callback' => array(
-        array("LoginRedirectsCallback", "save_callback")
+        array("LoginRedirectsCallback", "checkSelection")
     ),
-    'eval' => array
-        (
-        'style' => 'width:100%;',
-        'columnFields' => array
-            (
-            'lr_usergroup' => array
-                (
-                'label' => $GLOBALS['TL_LANG']['tl_content']['lr_usergroup'],
-                'inputType' => 'select',
-                'options_callback' => array("LoginRedirectsCallback", "options_callback"),
-                'eval' => array('mandatory' => true, 'style' => 'width:210px;'),
+    'eval' => array(
+        'style'                     => 'width:100%;',
+        'columnFields' => array(
+            'lr_id' => array(
+                'label'             => $GLOBALS['TL_LANG']['tl_content']['lr_id'],
+                'inputType'         => 'select',
+                'options_callback'  => array("LoginRedirectsCallback", "getSelection"),
+                'eval'              => array('mandatory' => true, 'style' => 'width:210px;', 'includeBlankOption' => true),
             ),
-            'lr_redirecturl' => array
-                (
-                'label' => $GLOBALS['TL_LANG']['tl_content']['lr_redirecturl'],
-                'exclude' => true,
-                'search' => true,
-                'inputType' => 'text',
-                'eval' => array('mandatory' => true, 'rgxp' => 'url', 'decodeEntities' => true, 'maxlength' => 255, 'tl_class' => 'w50 wizard', 'style' => 'width:370px;'),
-                'wizard' => array
-                    (
+            'lr_redirecturl' => array(
+                'label'             => $GLOBALS['TL_LANG']['tl_content']['lr_redirecturl'],
+                'exclude'           => true,
+                'search'            => true,
+                'inputType'         => 'text',
+                'eval'              => array('mandatory' => true, 'rgxp' => 'url', 'decodeEntities' => true, 'maxlength' => 255, 'tl_class' => 'w50 wizard', 'style' => 'width:370px;'),
+                'wizard' => array(
                     array('tl_content', 'pagePicker')
                 )
             )
@@ -78,56 +73,70 @@ class LoginRedirectsCallback extends Backend
 {
 
     /**
-     * Return all active groups with id and name.
+     * Return all active members/fe32760
+     * groups with id and name.
      * 
      * @return array 
      */
-    public function options_callback()
+    public function getSelection()
     {
         $arrReturn = array();
-		$arrReturn["all"] = $GLOBALS['TL_LANG']['tl_content']['lr_all_groups'];
+        $arrReturn["all"] = $GLOBALS['TL_LANG']['tl_content']['lr_all'];
 
+        // Groups
+        
         $arrMemberGroups = $this->Database->prepare("SELECT * FROM tl_member_group WHERE disable != 1")->execute()->fetchAllAssoc();
 
         foreach ($arrMemberGroups as $key => $value)
         {
-            $arrReturn[$value["id"]] = $value["name"];
+            $arrReturn["Mitgliedergruppen"]["G::" . $value["id"]] = $value["name"];
+        }
+
+        // Members
+        
+        $arrMember = $this->Database->prepare("SELECT * FROM tl_member WHERE locked != 1 ORDER BY username")->execute()->fetchAllAssoc();
+
+        foreach ($arrMember as $key => $value)
+        {
+            if (strlen($value["firstname"]) != 0 && strlen($value["lastname"]) != 0)
+            {
+                $arrReturn["Mitglieder"]["M::" . $value["id"]] = $value["firstname"] . " " . $value["lastname"];
+            }
+            else
+            {
+                $arrReturn["Mitglieder"]["M::" . $value["id"]] = $value["username"];
+            }
         }
 
         return $arrReturn;
     }
 
     /**
-     * Check if only a group is choosen not once or once.
+     * Check if a member or groups is chosen twice.
      * 
      * @param string $varVal
      * @param DataContainer $dc
      * @return string 
      */
-    public function save_callback($varVal, DataContainer $dc)
+    public function checkSelection($varVal, DataContainer $dc)
     {
-        $arrGroups = deserialize($varVal);
-        $arrGroupsFound = array();
+        $arrValue = deserialize($varVal);
+        $arrValueFound = array();
         
-        foreach ($arrGroups as $key => $value)
+        // Check duplicates
+        foreach ($arrValue as $key => $value)
         {
-            if (in_array($value["lr_usergroup"], $arrGroupsFound))
-            {                
-                $_SESSION["TL_ERROR"]["loginRedirects"] = $GLOBALS['TL_LANG']['ERR']['lr_error_groups'];
-                return "";
+            if (in_array($value["lr_id"], $arrValueFound))
+            {
+                $_SESSION["TL_ERROR"][] = $GLOBALS['TL_LANG']['ERR']['lr_error_duplicate'];
             }
             else
             {
-                $arrGroupsFound[] = $value["lr_usergroup"];
+                $arrValueFound[] = $value["lr_id"];
             }
         }
         
-        if (strlen($_SESSION["TL_ERROR"]["loginRedirects"]) != 0)
-        {
-            $_SESSION["TL_ERROR"] = "";
-        }
-        
-        return $varVal;
+        return serialize($arrValue);
     }
 
 }
