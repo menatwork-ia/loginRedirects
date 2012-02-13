@@ -1,7 +1,4 @@
-<?php
-
-if (!defined('TL_ROOT'))
-    die('You can not access this file directly!');
+<?php if (!defined('TL_ROOT')) die('You can not access this file directly!');
 
 /**
  * Contao Open Source CMS
@@ -65,6 +62,12 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect'] = array(
         )
     )
 );
+
+// Set chosen if we have a contao version 2.11
+if(version_compare(VERSION, "2.11", ">="))
+{
+    $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect']['eval']['columnFields']['lr_id']['eval']['chosen'] = true;
+}
 
 /**
  * Callback Class
