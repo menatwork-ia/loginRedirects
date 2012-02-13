@@ -64,7 +64,7 @@ class LoginRedirects extends ContentElement
                 $arrWildcard[] = '<tr>';
 
                 $arrWildcard[] = '<td>';
-                $arrWildcard[] = "(" . ++$i . ") " .  $this->lookUpName($value["lr_id"]);
+                $arrWildcard[] = ++$i . ". " .  $this->lookUpName($value["lr_id"]);
                 $arrWildcard[] = '</td>';
                 
                 $arrPage = $this->lookUpPage($value["lr_redirecturl"]);
@@ -272,7 +272,7 @@ class LoginRedirects extends ContentElement
         else
         {
             return array(
-                "title" => $arrPage[0]["title"] . " - " . $arrPage[0]["pageTitle"],
+                "title" => $arrPage[0]["title"] . ((strlen($arrPage[0]["pageTitle"]) != 0) ? " - " . $arrPage[0]["pageTitle"] : ""),
                 "link" => $this->generateFrontendUrl($arrPage[0])
             );
         }
