@@ -48,7 +48,7 @@ class LoginRedirects extends ContentElement
         if (TL_MODE == 'BE')
         {
             $arrRedirect = deserialize($this->lr_choose_redirect);
-            
+            FB::log(count($arrRedirect), 'count');
             $arrWildcard = array();
             $i = 0;
             
@@ -59,30 +59,37 @@ class LoginRedirects extends ContentElement
             $arrWildcard[] = '<col width="175" />';
             $arrWildcard[] = '<col width="400" />';
             $arrWildcard[] = '</colgroup>';
-            foreach ($arrRedirect as $key => $value)
+            if (count($arrRedirect) > 0)
             {
-                $arrWildcard[] = '<tr>';
-
-                $arrWildcard[] = '<td>';
-                $arrWildcard[] = ++$i . ". " .  $this->lookUpName($value["lr_id"]);
-                $arrWildcard[] = '</td>';
-                
-                $arrPage = $this->lookUpPage($value["lr_redirecturl"]);
-
-                $arrWildcard[] = '<td>';
-                if ($arrPage["link"] != "")
+                foreach ($arrRedirect as $key => $value)
                 {
-                    $arrWildcard[] = '<a ' . LINK_NEW_WINDOW . ' href="' . $arrPage["link"] . '">';
-                    $arrWildcard[] = $arrPage["title"];
-                    $arrWildcard[] = '</a>';
-                }
-                else
-                {
-                    $arrWildcard[] = $arrPage["title"];
-                }
-                $arrWildcard[] = '</td>';
+                    $arrWildcard[] = '<tr>';
 
-                $arrWildcard[] = '</tr>';
+                    $arrWildcard[] = '<td>';
+                    $arrWildcard[] = ++$i . ". " .  $this->lookUpName($value["lr_id"]);
+                    $arrWildcard[] = '</td>';
+
+                    $arrPage = $this->lookUpPage($value["lr_redirecturl"]);
+
+                    $arrWildcard[] = '<td>';
+                    if ($arrPage["link"] != "")
+                    {
+                        $arrWildcard[] = '<a ' . LINK_NEW_WINDOW . ' href="' . $arrPage["link"] . '">';
+                        $arrWildcard[] = $arrPage["title"];
+                        $arrWildcard[] = '</a>';
+                    }
+                    else
+                    {
+                        $arrWildcard[] = $arrPage["title"];
+                    }
+                    $arrWildcard[] = '</td>';
+
+                    $arrWildcard[] = '</tr>';
+                }
+            }
+            else
+            {
+                $arrWildcard[] = '<tr><td>'.$GLOBALS['TL_LANG']['tl_content']['lr_noentries'] .'</td></tr>';
             }
 
             $arrWildcard[] = '</table>';
@@ -106,74 +113,55 @@ class LoginRedirects extends ContentElement
     protected function compile()
     {
         // Import frontenduser
-        $this->import("FrontendUser");
-
-        // Get the redirect array
-        if (strlen($this->lr_choose_redirect) == 0 || $this->FrontendUser->login == 0)
-        {
-            return;
-        }
+        $this->import("FrontendUser", 'User');
 
         // Get settings
-        $arrRedirect = deserialize($this->lr_choose_redirect);
+        $arrRedirect = deserialize($this->lr_choose_redirect, true);
+
+        //return if the array is empty
+        if (count($arrRedirect) == 0) return;
 
         // Get usergroups
-        $arrCurrentGroups = $this->FrontendUser->groups;
+        $arrCurrentGroups = (is_array($this->User->groups))? $this->User->groups : array();
 
         // Build group and members array
         foreach ($arrRedirect as $key => $value)
         {
-            if (strpos($value['lr_id'], "M") !== FALSE)
-            {
-                $value['lr_id'] = str_replace("M::", "", $value['lr_id']);
-                                
-                if ($this->FrontendUser->id == $value["lr_id"])
-                {
-                    // Get ID for page
-                    $intPage = str_replace(array("{{link_url::", "}}"), array("", ""), $value["lr_redirecturl"]);                    
-                    // Load Page
-                    $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int) $intPage)->fetchAllAssoc();
+            $redirect = false;
+            $arrId = explode("::", $value['lr_id']);
 
-                    //Check if we have a page
-                    if (count($arrPage) == 0)
-                    {
-                        $this->log("Try to redirect, but the necessary page cannot be found in the database.", __FUNCTION__ . " | " . __CLASS__, TL_ERROR);
-                    }
-                    else
-                    {
-                        $this->redirect($this->generateFrontendUrl($arrPage[0]));
-                    }
-                }
+            switch ($arrId[0])
+            {
+                case 'G':
+                    //redirect if the user ist in the correct group
+                    if (in_array($arrId[1], $arrCurrentGroups)) $redirect = true;
+                    break;
+                case 'M':
+                    //redirect if the FE-User id is found
+                    if ($this->User->id == $arrId[1]) $redirect = true;
+                    break;
+                case 'allmembers':
+                    //redirect if we have a valid FE-User
+                    if ($this->User->id != '') $redirect = true;
+                    break;
+                case 'guestsonly':
+                    //skip loop if we have a user-id
+                    if ($this->User->id == '') $redirect = true;
+                    break;
+                case 'all':
+                    //no test, just redirect:)
+                    $redirect = true;
+                    break;
             }
-            else if (strpos($value['lr_id'], "G") !== FALSE)
-            {
-                $value['lr_id'] = str_replace("G::", "", $value['lr_id']);
-                
-                if (in_array($value["lr_id"], $arrCurrentGroups))
-                {
-                    // Get ID for page
-                    $intPage = str_replace(array("{{link_url::", "}}"), array("", ""), $value["lr_redirecturl"]);
-                    // Load Page
-                    $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int) $intPage)->fetchAllAssoc();
 
-                    //Check if we have a page
-                    if (count($arrPage) == 0)
-                    {
-                        $this->log("Try to redirect, but the necessary page cannot be found in the database.", __FUNCTION__ . " | " . __CLASS__, TL_ERROR);
-                    }
-                    else
-                    {
-                        $this->redirect($this->generateFrontendUrl($arrPage[0]));
-                    }
-                }
-            }   
-            else if ($value["lr_id"] == "all")
+            if ($redirect)
             {
+
                 // Get ID for page
                 $intPage = str_replace(array("{{link_url::", "}}"), array("", ""), $value["lr_redirecturl"]);
                 // Load Page
                 $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int) $intPage)->fetchAllAssoc();
-
+                
                 //Check if we have a page
                 if (count($arrPage) == 0)
                 {
@@ -184,12 +172,8 @@ class LoginRedirects extends ContentElement
                     $this->redirect($this->generateFrontendUrl($arrPage[0]));
                 }
             }
-            else
-            {
-                $this->log("Try to redirect, but the type of user/group is unknown: " . $value['lr_id'], __FUNCTION__ . " | " . __CLASS__, TL_ERROR);
-            }
         }
-
+        
         return;
     }
     
@@ -204,51 +188,54 @@ class LoginRedirects extends ContentElement
      */
     private function lookUpName($strID)
     {
-        if (strpos($strID, "M") !== FALSE)
-        {
-            $strID = str_replace("M::", "", $strID);
-            
-            $objUser = $this->Database->prepare("SELECT * FROM tl_member WHERE id=?")->execute($strID);
-            
-            if($objUser->numRows == 0)
-            {
-                return $GLOBALS['TL_LANG']['ERR']['lr_error_unknownMember'];
-            }
-            else
-            {
-                if (strlen($objUser->firstname) != 0 && strlen($objUser->lastname) != 0)
+        switch ($strID){
+            case 'all':
+            case 'allmembers':
+            case 'guestsonly':
+                    return $GLOBALS['TL_LANG']['tl_content']['lr_'.$strID];
+                break;
+            default:
+                $strID = explode("::", $strID);
+                if ($strID[0] == "M")
                 {
-                    return $objUser->firstname . " " . $objUser->lastname;
+                    $strID = $strID[1];
+
+                    $objUser = $this->Database->prepare("SELECT * FROM tl_member WHERE id=?")->limit(1)->execute($strID);
+
+                    if($objUser->numRows == 0)
+                    {
+                        return $GLOBALS['TL_LANG']['ERR']['lr_unknownMember'];
+                    }
+                    else
+                    {
+                        if (strlen($objUser->firstname) != 0 && strlen($objUser->lastname) != 0)
+                        {
+                            return $objUser->firstname . " " . $objUser->lastname;
+                        }
+                        else
+                        {
+                            return $objUser->username;
+                        }
+                    }
                 }
-                else
+                else if ($strID[0] == "G")
                 {
-                    return $objUser->username;
+                    $strID = $strID = $strID[1];
+
+                    $objGroup = $this->Database->prepare("SELECT * FROM tl_member_group WHERE id=?")->limit(1)->execute($strID);
+
+                    if($objGroup->numRows == 0)
+                    {
+                        return $GLOBALS['TL_LANG']['ERR']['lr_unknownGroup'];
+                    }
+                    else
+                    {
+                        return $objGroup->name;
+                    }            
                 }
-            }
+                break;
         }
-        else if (strpos($strID, "G") !== FALSE)
-        {
-            $strID = str_replace("G::", "", $strID);
-            
-            $objGroup = $this->Database->prepare("SELECT * FROM tl_member_group WHERE id=?")->execute($strID);
-            
-            if($objGroup->numRows == 0)
-            {
-                return $GLOBALS['TL_LANG']['ERR']['lr_error_unknownGroup'];
-            }
-            else
-            {
-                return $objGroup->name;
-            }            
-        }
-        else if ($strID == "all")
-        {
-            return $GLOBALS['TL_LANG']['tl_content']['lr_all'];
-        }
-        else
-        {
-            return $GLOBALS['TL_LANG']['ERR']['lr_error_unknownType'];
-        }
+        return $GLOBALS['TL_LANG']['ERR']['lr_unknownType'];
     }
     
     /**
@@ -265,7 +252,7 @@ class LoginRedirects extends ContentElement
         if (count($arrPage) == 0)
         {
             return array(
-                "title" => $GLOBALS['TL_LANG']['ERR']['lr_error_unknownPage'],
+                "title" => $GLOBALS['TL_LANG']['ERR']['lr_unknownPage'],
                 "link" => ""
             );
         }
