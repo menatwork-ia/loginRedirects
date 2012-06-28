@@ -48,7 +48,7 @@ class LoginRedirects extends ContentElement
         if (TL_MODE == 'BE')
         {
             $arrRedirect = deserialize($this->lr_choose_redirect);
-            FB::log(count($arrRedirect), 'count');
+
             $arrWildcard = array();
             $i = 0;
             
