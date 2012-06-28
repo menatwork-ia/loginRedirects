@@ -85,29 +85,32 @@ class LoginRedirectsCallback extends Backend
     {
         $arrReturn = array();
         $arrReturn["all"] = $GLOBALS['TL_LANG']['tl_content']['lr_all'];
+        $arrReturn["allmembers"] = $GLOBALS['TL_LANG']['tl_content']['lr_allmembers'];
+        $arrReturn["guestsonly"] = $GLOBALS['TL_LANG']['tl_content']['lr_guestsonly'];
+        
 
         // Groups
         
-        $arrMemberGroups = $this->Database->prepare("SELECT * FROM tl_member_group WHERE disable != 1")->execute()->fetchAllAssoc();
+        $arrMemberGroups = $this->Database->prepare("SELECT * FROM tl_member_group WHERE disable != 1 ORDER BY name")->execute()->fetchAllAssoc();
 
         foreach ($arrMemberGroups as $key => $value)
         {
-            $arrReturn["Mitgliedergruppen"]["G::" . $value["id"]] = $value["name"];
+            $arrReturn[$GLOBALS['TL_LANG']['tl_content']['lr_groups']]["G::" . $value["id"]] = $value["name"];
         }
 
         // Members
         
-        $arrMember = $this->Database->prepare("SELECT * FROM tl_member WHERE locked != 1 ORDER BY username")->execute()->fetchAllAssoc();
+        $arrMember = $this->Database->prepare("SELECT * FROM tl_member WHERE locked != 1 ORDER BY firstname, lastname")->execute()->fetchAllAssoc();
 
         foreach ($arrMember as $key => $value)
         {
             if (strlen($value["firstname"]) != 0 && strlen($value["lastname"]) != 0)
             {
-                $arrReturn["Mitglieder"]["M::" . $value["id"]] = $value["firstname"] . " " . $value["lastname"];
+                $arrReturn[$GLOBALS['TL_LANG']['tl_content']['lr_members']]["M::" . $value["id"]] = $value["firstname"] . " " . $value["lastname"];
             }
             else
             {
-                $arrReturn["Mitglieder"]["M::" . $value["id"]] = $value["username"];
+                $arrReturn[$GLOBALS['TL_LANG']['tl_content']['lr_members']]["M::" . $value["id"]] = $value["username"];
             }
         }
 
@@ -115,7 +118,7 @@ class LoginRedirectsCallback extends Backend
     }
 
     /**
-     * Check if a member or groups is chosen twice.
+     * Check if a member or group is chosen twice.
      * 
      * @param string $varVal
      * @param DataContainer $dc
