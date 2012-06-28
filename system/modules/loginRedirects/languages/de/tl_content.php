@@ -44,6 +44,6 @@ $GLOBALS['TL_LANG']['tl_content']['lr_groups']              = 'Mitgliedergruppe'
  * Legends
  */
 $GLOBALS['TL_LANG']['tl_content']['lr_legend']              = 'Weiterleitungen';
-
+$GLOBALS['TL_LANG']['tl_content']['lr_noentries']           = 'Keine Weiterleitung definiert!';
 
 ?>

@@ -44,6 +44,7 @@ $GLOBALS['TL_LANG']['tl_content']['lr_groups']              = 'Groups';
  * Legends
  */
 $GLOBALS['TL_LANG']['tl_content']['lr_legend']              = 'Redirects';
+$GLOBALS['TL_LANG']['tl_content']['lr_noentries']           = 'No redirects spcified!';
 
 
 ?>

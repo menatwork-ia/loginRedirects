@@ -48,7 +48,7 @@ class LoginRedirects extends ContentElement
         if (TL_MODE == 'BE')
         {
             $arrRedirect = deserialize($this->lr_choose_redirect);
-            
+            FB::log(count($arrRedirect), 'count');
             $arrWildcard = array();
             $i = 0;
             
@@ -59,30 +59,37 @@ class LoginRedirects extends ContentElement
             $arrWildcard[] = '<col width="175" />';
             $arrWildcard[] = '<col width="400" />';
             $arrWildcard[] = '</colgroup>';
-            foreach ($arrRedirect as $key => $value)
+            if (count($arrRedirect) > 0)
             {
-                $arrWildcard[] = '<tr>';
-
-                $arrWildcard[] = '<td>';
-                $arrWildcard[] = ++$i . ". " .  $this->lookUpName($value["lr_id"]);
-                $arrWildcard[] = '</td>';
-                
-                $arrPage = $this->lookUpPage($value["lr_redirecturl"]);
-
-                $arrWildcard[] = '<td>';
-                if ($arrPage["link"] != "")
+                foreach ($arrRedirect as $key => $value)
                 {
-                    $arrWildcard[] = '<a ' . LINK_NEW_WINDOW . ' href="' . $arrPage["link"] . '">';
-                    $arrWildcard[] = $arrPage["title"];
-                    $arrWildcard[] = '</a>';
-                }
-                else
-                {
-                    $arrWildcard[] = $arrPage["title"];
-                }
-                $arrWildcard[] = '</td>';
+                    $arrWildcard[] = '<tr>';
 
-                $arrWildcard[] = '</tr>';
+                    $arrWildcard[] = '<td>';
+                    $arrWildcard[] = ++$i . ". " .  $this->lookUpName($value["lr_id"]);
+                    $arrWildcard[] = '</td>';
+
+                    $arrPage = $this->lookUpPage($value["lr_redirecturl"]);
+
+                    $arrWildcard[] = '<td>';
+                    if ($arrPage["link"] != "")
+                    {
+                        $arrWildcard[] = '<a ' . LINK_NEW_WINDOW . ' href="' . $arrPage["link"] . '">';
+                        $arrWildcard[] = $arrPage["title"];
+                        $arrWildcard[] = '</a>';
+                    }
+                    else
+                    {
+                        $arrWildcard[] = $arrPage["title"];
+                    }
+                    $arrWildcard[] = '</td>';
+
+                    $arrWildcard[] = '</tr>';
+                }
+            }
+            else
+            {
+                $arrWildcard[] = '<tr><td>'.$GLOBALS['TL_LANG']['tl_content']['lr_noentries'] .'</td></tr>';
             }
 
             $arrWildcard[] = '</table>';
