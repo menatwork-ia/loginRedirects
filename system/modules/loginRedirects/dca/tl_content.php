@@ -134,7 +134,7 @@ class LoginRedirectsCallback extends Backend
         {
             if (in_array($value["lr_id"], $arrValueFound))
             {
-                $_SESSION["TL_ERROR"][] = $GLOBALS['TL_LANG']['ERR']['lr_error_duplicate'];
+                $_SESSION["TL_ERROR"][] = $GLOBALS['TL_LANG']['ERR']['lr_duplicate'];
             }
             else
             {

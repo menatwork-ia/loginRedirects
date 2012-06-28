@@ -204,7 +204,7 @@ class LoginRedirects extends ContentElement
 
                     if($objUser->numRows == 0)
                     {
-                        return $GLOBALS['TL_LANG']['ERR']['lr_error_unknownMember'];
+                        return $GLOBALS['TL_LANG']['ERR']['lr_unknownMember'];
                     }
                     else
                     {
@@ -226,7 +226,7 @@ class LoginRedirects extends ContentElement
 
                     if($objGroup->numRows == 0)
                     {
-                        return $GLOBALS['TL_LANG']['ERR']['lr_error_unknownGroup'];
+                        return $GLOBALS['TL_LANG']['ERR']['lr_unknownGroup'];
                     }
                     else
                     {
@@ -235,7 +235,7 @@ class LoginRedirects extends ContentElement
                 }
                 break;
         }
-        return $GLOBALS['TL_LANG']['ERR']['lr_error_unknownType'];
+        return $GLOBALS['TL_LANG']['ERR']['lr_unknownType'];
     }
     
     /**
@@ -252,7 +252,7 @@ class LoginRedirects extends ContentElement
         if (count($arrPage) == 0)
         {
             return array(
-                "title" => $GLOBALS['TL_LANG']['ERR']['lr_error_unknownPage'],
+                "title" => $GLOBALS['TL_LANG']['ERR']['lr_unknownPage'],
                 "link" => ""
             );
         }
