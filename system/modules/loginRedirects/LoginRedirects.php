@@ -48,7 +48,7 @@ class LoginRedirects extends ContentElement
         if (TL_MODE == 'BE')
         {
             $arrRedirect = deserialize($this->lr_choose_redirect);
-            FB::log(count($arrRedirect), 'count');
+
             $arrWildcard = array();
             $i = 0;
             
@@ -133,7 +133,7 @@ class LoginRedirects extends ContentElement
             switch ($arrId[0])
             {
                 case 'G':
-                    //redirect if the user ist in the correct group
+                    //redirect if the user is in the correct group
                     if (in_array($arrId[1], $arrCurrentGroups)) $redirect = true;
                     break;
                 case 'M':
@@ -156,7 +156,6 @@ class LoginRedirects extends ContentElement
 
             if ($redirect)
             {
-
                 // Get ID for page
                 $intPage = str_replace(array("{{link_url::", "}}"), array("", ""), $value["lr_redirecturl"]);
                 // Load Page
@@ -168,8 +167,12 @@ class LoginRedirects extends ContentElement
                     $this->log("Try to redirect, but the necessary page cannot be found in the database.", __FUNCTION__ . " | " . __CLASS__, TL_ERROR);
                 }
                 else
-                {
-                    $this->redirect($this->generateFrontendUrl($arrPage[0]));
+                {                                
+                    $arrCurrentPage = $GLOBALS['objPage']->fetchAllAssoc();                                        
+                    if($arrCurrentPage[0]['id'] != $arrPage[0]['id'])
+                    {
+                         $this->redirect($this->generateFrontendUrl($arrPage[0]));
+                    }
                 }
             }
         }
