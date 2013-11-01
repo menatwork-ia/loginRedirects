@@ -153,7 +153,7 @@ class LoginRedirects extends ContentElement
                     $redirect = true;
                     break;
             }
-
+			
             if ($redirect)
             {
                 // Get ID for page
@@ -167,8 +167,18 @@ class LoginRedirects extends ContentElement
                     $this->log("Try to redirect, but the necessary page cannot be found in the database.", __FUNCTION__ . " | " . __CLASS__, TL_ERROR);
                 }
                 else
-                {                                
-                    $arrCurrentPage = $GLOBALS['objPage']->fetchAllAssoc();                                        
+                {       
+					// Get information form current page.
+					if(version_compare(VERSION, '3', '<'))
+					{
+						$arrCurrentPage = $GLOBALS['objPage']->fetchAllAssoc();
+					}
+					else
+					{
+						$arrCurrentPage = $GLOBALS['objPage']->row();
+					}
+					
+                    // Check if redirect target and current page are equal.                                    
                     if($arrCurrentPage[0]['id'] != $arrPage[0]['id'])
                     {
                          $this->redirect($this->generateFrontendUrl($arrPage[0]));
