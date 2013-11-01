@@ -1,0 +1,39 @@
+{
+	"name":"andreasisaak/loginredirects",
+	"description":"Forward fe groups after logging selectively",
+	"keywords":["login","redirects","member"],
+	"type":"contao-module",
+	"license":"LGPL-3.0+",
+	"authors":[
+		{
+			"name":"Andreas Isaak",
+			"email":"info@andreas-isaak.de",
+			"homepage":"http://www.andreas-isaak.de",
+			"role":"Developer"
+		},
+		{
+			"name":"Stefan Heimes",
+			"email":"stefan_heimes@hotmail.com",
+			"role":"Developer"
+		}
+	],
+	"require":{
+		"php":">=5.3",
+		"contao/core":">=2.11,<4",
+		"contao-community-alliance/composer-installer":"*",
+		"menatwork/contao-multicolumnwizard":"3.2.*"
+	},
+	"autoload":{
+		"classmap":["system/"]
+	},
+	"replace":{
+		"contao-legacy/loginredirects":"*"
+	},
+	"extra":{
+		"contao":{
+			"sources":{
+				"system/modules/loginRedirects":"system/modules/loginRedirects"
+			}
+		}
+	}
+}
