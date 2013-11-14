@@ -1,5 +1,5 @@
 {
-	"name":"andreasisaak/loginredirects",
+	"name":"menatwork/loginredirects",
 	"description":"Forward fe groups after logging selectively",
 	"keywords":["login","redirects","member"],
 	"type":"contao-module",
@@ -7,13 +7,14 @@
 	"authors":[
 		{
 			"name":"Andreas Isaak",
-			"email":"info@andreas-isaak.de",
-			"homepage":"http://www.andreas-isaak.de",
+			"email":"isaak@men-at-work.de",
+			"homepage":"http://www.men-at-work.de",
 			"role":"Developer"
 		},
 		{
 			"name":"Stefan Heimes",
-			"email":"stefan_heimes@hotmail.com",
+			"email":"heimes@men-at-work.de",
+			"homepage":"http://www.men-at-work.de",
 			"role":"Developer"
 		}
 	],
@@ -27,7 +28,8 @@
 		"classmap":["system/"]
 	},
 	"replace":{
-		"contao-legacy/loginredirects":"*"
+		"contao-legacy/loginredirects":"*",
+		"andreasisaak/loginredirects":"*"
 	},
 	"extra":{
 		"contao":{
