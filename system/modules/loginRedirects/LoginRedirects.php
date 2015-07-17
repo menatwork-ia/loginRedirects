@@ -183,6 +183,12 @@ class LoginRedirects extends ContentElement
                     {
                          $this->redirect($this->generateFrontendUrl($arrPage[0]));
                     }
+                    
+                    // check if value is an hardcoded url
+                    if(filter_var($value['lr_redirecturl'], FILTER_VALIDATE_URL)){
+                    	$this->redirect($value['lr_redirecturl']);
+                    }
+                    
                 }
             }
         }
