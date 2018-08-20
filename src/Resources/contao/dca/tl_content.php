@@ -38,7 +38,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect'] = array(
     'exclude'                       => true,
     'inputType'                     => 'multiColumnWizard',
     'save_callback' => array(
-        array("LoginRedirectsCallback", "checkSelection")
+        array("MenAtWork\\LoginRedirectBundle\\Contao\\Table\\LoginRedirectsCallback", "checkSelection")
     ),
     'eval' => array(
         'style'                     => 'width:100%;',
@@ -46,7 +46,7 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect'] = array(
             'lr_id' => array(
                 'label'             => $GLOBALS['TL_LANG']['tl_content']['lr_id'],
                 'inputType'         => 'select',
-                'options_callback'  => array("LoginRedirectsCallback", "getSelection"),
+                'options_callback'  => array("MenAtWork\\LoginRedirectBundle\\Contao\\Table\\LoginRedirectsCallback", "getSelection"),
                 'eval'              => array('mandatory' => true, 'style' => 'width:210px;', 'includeBlankOption' => true),
             ),
             'lr_redirecturl' => array(
@@ -61,91 +61,13 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect'] = array(
             )
         )
     ),
-    'sql' => 'lr_choose_redirect blob NULL'
+    'sql' => 'blob NULL'
 );
 
 // Set chosen if we have a contao version 2.11
 if(version_compare(VERSION, "2.11", ">="))
 {
     $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect']['eval']['columnFields']['lr_id']['eval']['chosen'] = true;
-}
-
-/**
- * Callback Class
- */
-class LoginRedirectsCallback extends Backend
-{
-
-    /**
-     * Return all active members/fe32760
-     * groups with id and name.
-     * 
-     * @return array 
-     */
-    public function getSelection()
-    {
-        $arrReturn = array();
-        $arrReturn["all"] = $GLOBALS['TL_LANG']['tl_content']['lr_all'];
-        $arrReturn["allmembers"] = $GLOBALS['TL_LANG']['tl_content']['lr_allmembers'];
-        $arrReturn["guestsonly"] = $GLOBALS['TL_LANG']['tl_content']['lr_guestsonly'];
-        
-
-        // Groups
-        
-        $arrMemberGroups = $this->Database->prepare("SELECT * FROM tl_member_group WHERE disable != 1 ORDER BY name")->execute()->fetchAllAssoc();
-
-        foreach ($arrMemberGroups as $key => $value)
-        {
-            $arrReturn[$GLOBALS['TL_LANG']['tl_content']['lr_groups']]["G::" . $value["id"]] = $value["name"];
-        }
-
-        // Members
-        
-        $arrMember = $this->Database->prepare("SELECT * FROM tl_member WHERE locked != 1 ORDER BY firstname, lastname")->execute()->fetchAllAssoc();
-
-        foreach ($arrMember as $key => $value)
-        {
-            if (strlen($value["firstname"]) != 0 && strlen($value["lastname"]) != 0)
-            {
-                $arrReturn[$GLOBALS['TL_LANG']['tl_content']['lr_members']]["M::" . $value["id"]] = $value["firstname"] . " " . $value["lastname"];
-            }
-            else
-            {
-                $arrReturn[$GLOBALS['TL_LANG']['tl_content']['lr_members']]["M::" . $value["id"]] = $value["username"];
-            }
-        }
-
-        return $arrReturn;
-    }
-
-    /**
-     * Check if a member or group is chosen twice.
-     * 
-     * @param string $varVal
-     * @param DataContainer $dc
-     * @return string 
-     */
-    public function checkSelection($varVal, DataContainer $dc)
-    {
-        $arrValue = deserialize($varVal);
-        $arrValueFound = array();
-        
-        // Check duplicates
-        foreach ($arrValue as $key => $value)
-        {
-            if (in_array($value["lr_id"], $arrValueFound))
-            {
-                $_SESSION["TL_ERROR"][] = $GLOBALS['TL_LANG']['ERR']['lr_duplicate'];
-            }
-            else
-            {
-                $arrValueFound[] = $value["lr_id"];
-            }
-        }
-        
-        return serialize($arrValue);
-    }
-
 }
 
 ?>
