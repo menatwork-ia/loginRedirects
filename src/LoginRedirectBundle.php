@@ -12,7 +12,7 @@ namespace MenAtWork\LoginRedirectBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
- * Class SelectModuleBundle
+ * Class LoginRedirectBundle
  *
  * @package MenAtWork\LoginRedirectBundle
  */

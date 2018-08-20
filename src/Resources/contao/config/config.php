@@ -30,6 +30,6 @@
 /**
  * Content Element
  */
-$GLOBALS['TL_CTE']['miscellaneous']['loginRedirects'] = 'LoginRedirects';
+$GLOBALS['TL_CTE']['miscellaneous']['loginRedirects'] = 'MenAtWork\LoginRedirectBundle\Contao\LoginRedirects';
 
 ?>
