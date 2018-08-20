@@ -60,7 +60,8 @@ $GLOBALS['TL_DCA']['tl_content']['fields']['lr_choose_redirect'] = array(
                 )
             )
         )
-    )
+    ),
+    'sql' => 'lr_choose_redirect blob NULL'
 );
 
 // Set chosen if we have a contao version 2.11

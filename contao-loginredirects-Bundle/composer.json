@@ -1,0 +1,53 @@
+{
+	"name":"menatwork/loginredirects",
+	"description":"Forward fe groups after logging selectively",
+	"keywords":["login","redirects","member"],
+	"type":"contao-bundle",
+	"license":"LGPL-3.0-or-later",
+	"authors":[
+		{
+			"name":"Andreas Isaak",
+			"email":"isaak@men-at-work.de",
+			"homepage":"http://www.men-at-work.de",
+			"role":"Developer"
+		},
+		{
+			"name":"Stefan Heimes",
+			"email":"heimes@men-at-work.de",
+			"homepage":"http://www.men-at-work.de",
+			"role":"Developer"
+		},
+		{
+			"name":"Andreas Dziemba",
+			"email":"dziemba@men-at-work.de",
+			"homepage":"http://www.men-at-work.de",
+			"role":"Developer"
+		}
+	],
+	"require":{
+		"php": "^7.0",
+		"contao/core-bundle": "^4.4",
+		"menatwork/contao-multicolumnwizard": "~3.3"
+	},
+	"autoload":{
+		"psr-4": {
+			"MenAtWork\\LoginRedirectBundle\\": "src"
+		},
+		"classmap": [
+			"src/Contao/"
+		],
+		"exclude-from-classmap": [
+			"src/Resources/contao/config/",
+			"src/Resources/contao/dca/",
+			"src/Resources/contao/languages/",
+			"src/Resources/contao/templates/"
+		]
+	},
+	"replace":{
+		"contao-legacy/loginredirects":"*",
+		"andreasisaak/loginredirects":"*"
+	},
+	"extra": {
+		"contao-manager-plugin": "MenAtWork\\LoginRedirectBundle\\ContaoManager\\Plugin"
+	}
+}

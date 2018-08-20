@@ -1,4 +1,6 @@
-<?php if (!defined('TL_ROOT')) die('You can not access this file directly!');
+<?php
+
+namespace MenAtWork\LoginRedirectBundle\Contao;
 
 /**
  * Contao Open Source CMS
@@ -27,7 +29,7 @@
  * @filesource
  */
 
-class LoginRedirects extends ContentElement
+class LoginRedirects extends \ContentElement
 {
 
     /**
@@ -94,7 +96,7 @@ class LoginRedirects extends ContentElement
 
             $arrWildcard[] = '</table>';
 
-            $objTemplate = new BackendTemplate('be_wildcard');
+            $objTemplate = new \BackendTemplate('be_wildcard');
 
             $objTemplate->wildcard = implode("\n", $arrWildcard);
             $objTemplate->title = $this->headline;
@@ -255,7 +257,7 @@ class LoginRedirects extends ContentElement
      * Look up a page title
      * 
      * @param string $strID
-     * @return string 
+     * @return array
      */
     private function lookUpPage($strID)
     {
