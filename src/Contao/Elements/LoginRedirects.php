@@ -1,57 +1,51 @@
-<?php if (!defined('TL_ROOT')) die('You can not access this file directly!');
+<?php
 
 /**
  * Contao Open Source CMS
- * Copyright (C) 2005-2010 Leo Feyer
  *
- * Formerly known as TYPOlight Open Source CMS.
- *
- * This program is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation, either
- * version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program. If not, please visit the Free
- * Software Foundation website at <http://www.gnu.org/licenses/>.
- *
- * PHP version 5
- * @copyright  MEN AT WORK 2011
- * @package    loginRedirects 
- * @license    GNU/LGPL 
+ * @copyright  MEN AT WORK 2023
+ * @package    MenAtWork\LoginRedirectsBundle
+ * @license    GNU/LGPL
  * @filesource
  */
 
+namespace MenAtWork\LoginRedirectsBundle\Contao\Elements;
+use BackendTemplate;
+use ContentElement;
+use StringUtil;
+
+/**
+ * Contao Open Source CMS
+ *
+ * @copyright  MEN AT WORK 2023
+ * @package    MenAtWork\LoginRedirectsBundle
+ * @license    GNU/LGPL
+ * @filesource
+ */
 class LoginRedirects extends ContentElement
 {
 
     /**
      * Tempate var
-     * 
-     * @var string 
-     */ 
+     *
+     * @var string
+     */
     protected $strTemplate = "ce_loginRedirects";
 
     /**
      * Backend
-     * 
-     * @return string 
+     *
+     * @return string
      */
     public function generate()
     {
         // If backendmode shows widlcard.
-        if (TL_MODE == 'BE')
-        {
+        if (TL_MODE == 'BE') {
             $arrRedirect = deserialize($this->lr_choose_redirect);
 
-            $arrWildcard = array();
+            $arrWildcard = [];
             $i = 0;
-            
+
             $arrWildcard[] = '### LOGIN REDIRECTS ###';
             $arrWildcard[] = '<br /><br />';
             $arrWildcard[] = '<table>';
@@ -59,37 +53,30 @@ class LoginRedirects extends ContentElement
             $arrWildcard[] = '<col width="175" />';
             $arrWildcard[] = '<col width="400" />';
             $arrWildcard[] = '</colgroup>';
-            if (count($arrRedirect) > 0)
-            {
-                foreach ($arrRedirect as $key => $value)
-                {
+            if (count($arrRedirect) > 0) {
+                foreach ($arrRedirect as $key => $value) {
                     $arrWildcard[] = '<tr>';
 
                     $arrWildcard[] = '<td>';
-                    $arrWildcard[] = ++$i . ". " .  $this->lookUpName($value["lr_id"]);
+                    $arrWildcard[] = ++$i . ". " . $this->lookUpName($value["lr_id"]);
                     $arrWildcard[] = '</td>';
 
                     $arrPage = $this->lookUpPage($value["lr_redirecturl"]);
 
                     $arrWildcard[] = '<td>';
-                    if ($arrPage["link"] != "")
-                    {
+                    if ($arrPage["link"] != "") {
                         $arrWildcard[] = '<a ' . LINK_NEW_WINDOW . ' href="' . $arrPage["link"] . '">';
                         $arrWildcard[] = $arrPage["title"];
                         $arrWildcard[] = '</a>';
-                    }
-                    else
-                    {
+                    } else {
                         $arrWildcard[] = $arrPage["title"];
                     }
                     $arrWildcard[] = '</td>';
 
                     $arrWildcard[] = '</tr>';
                 }
-            }
-            else
-            {
-                $arrWildcard[] = '<tr><td>'.$GLOBALS['TL_LANG']['tl_content']['lr_noentries'] .'</td></tr>';
+            } else {
+                $arrWildcard[] = '<tr><td>' . $GLOBALS['TL_LANG']['tl_content']['lr_noentries'] . '</td></tr>';
             }
 
             $arrWildcard[] = '</table>';
@@ -105,7 +92,7 @@ class LoginRedirects extends ContentElement
         }
 
         return parent::generate();
-    }    
+    }
 
     /**
      * Frontend
@@ -116,22 +103,20 @@ class LoginRedirects extends ContentElement
         $this->import("FrontendUser", 'User');
 
         // Get settings
-        $arrRedirect = deserialize($this->lr_choose_redirect, true);
+        $arrRedirect = StringUtil::deserialize($this->lr_choose_redirect, true);
 
         //return if the array is empty
         if (count($arrRedirect) == 0) return;
 
         // Get usergroups
-        $arrCurrentGroups = (is_array($this->User->groups))? $this->User->groups : array();
+        $arrCurrentGroups = (is_array($this->User->groups)) ? $this->User->groups : [];
 
         // Build group and members array
-        foreach ($arrRedirect as $key => $value)
-        {
+        foreach ($arrRedirect as $key => $value) {
             $redirect = false;
             $arrId = explode("::", $value['lr_id']);
 
-            switch ($arrId[0])
-            {
+            switch ($arrId[0]) {
                 case 'G':
                     //redirect if the user is in the correct group
                     if (in_array($arrId[1], $arrCurrentGroups)) $redirect = true;
@@ -153,128 +138,102 @@ class LoginRedirects extends ContentElement
                     $redirect = true;
                     break;
             }
-			
-            if ($redirect)
-            {
+
+            if ($redirect) {
                 // Get ID for page
-                $intPage = str_replace(array("{{link_url::", "}}"), array("", ""), $value["lr_redirecturl"]);
+                $intPage = str_replace(["{{link_url::", "}}"], ["", ""], $value["lr_redirecturl"]);
                 // Load Page
-                $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int) $intPage)->fetchAllAssoc();
-                
+                $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int)$intPage)->fetchAllAssoc();
+
                 //Check if we have a page
-                if (count($arrPage) == 0)
-                {
+                if (count($arrPage) == 0) {
                     $this->log("Try to redirect, but the necessary page cannot be found in the database.", __FUNCTION__ . " | " . __CLASS__, TL_ERROR);
-                }
-                else
-                {       
-					// Get information form current page.
-					if(version_compare(VERSION, '3', '<'))
-					{
-						$arrCurrentPage = $GLOBALS['objPage']->fetchAllAssoc();
-					}
-					else
-					{
-						$arrCurrentPage = $GLOBALS['objPage']->row();
-					}
-					
+                } else {
+                    // Get information form current page.
+                    $arrCurrentPage = $GLOBALS['objPage']->row();
+
                     // Check if redirect target and current page are equal.                                    
-                    if($arrCurrentPage[0]['id'] != $arrPage[0]['id'])
-                    {
-                         $this->redirect($this->generateFrontendUrl($arrPage[0]));
+                    if ($arrCurrentPage['id'] != $arrPage[0]['id']) {
+                        $pageRedirect = $this->replaceInsertTags($value['lr_redirecturl']);
+                        $this->redirect($pageRedirect);
                     }
                 }
             }
         }
-        
+
         return;
     }
-    
+
     /** ------------------------------------------------------------------------
      * Helper
      */
-    
+
     /**
      * Look up a member name or group name
      * @param string $strID
-     * @return string 
+     * @return string
      */
     private function lookUpName($strID)
     {
-        switch ($strID){
+        switch ($strID) {
             case 'all':
             case 'allmembers':
             case 'guestsonly':
-                    return $GLOBALS['TL_LANG']['tl_content']['lr_'.$strID];
+                return $GLOBALS['TL_LANG']['tl_content']['lr_' . $strID];
                 break;
             default:
                 $strID = explode("::", $strID);
-                if ($strID[0] == "M")
-                {
+                if ($strID[0] == "M") {
                     $strID = $strID[1];
 
                     $objUser = $this->Database->prepare("SELECT * FROM tl_member WHERE id=?")->limit(1)->execute($strID);
 
-                    if($objUser->numRows == 0)
-                    {
+                    if ($objUser->numRows == 0) {
                         return $GLOBALS['TL_LANG']['ERR']['lr_unknownMember'];
-                    }
-                    else
-                    {
-                        if (strlen($objUser->firstname) != 0 && strlen($objUser->lastname) != 0)
-                        {
+                    } else {
+                        if (strlen($objUser->firstname) != 0 && strlen($objUser->lastname) != 0) {
                             return $objUser->firstname . " " . $objUser->lastname;
-                        }
-                        else
-                        {
+                        } else {
                             return $objUser->username;
                         }
                     }
-                }
-                else if ($strID[0] == "G")
-                {
+                } else if ($strID[0] == "G") {
                     $strID = $strID = $strID[1];
 
                     $objGroup = $this->Database->prepare("SELECT * FROM tl_member_group WHERE id=?")->limit(1)->execute($strID);
 
-                    if($objGroup->numRows == 0)
-                    {
+                    if ($objGroup->numRows == 0) {
                         return $GLOBALS['TL_LANG']['ERR']['lr_unknownGroup'];
-                    }
-                    else
-                    {
+                    } else {
                         return $objGroup->name;
-                    }            
+                    }
                 }
                 break;
         }
         return $GLOBALS['TL_LANG']['ERR']['lr_unknownType'];
     }
-    
+
     /**
      * Look up a page title
-     * 
+     *
      * @param string $strID
-     * @return string 
+     * @return string
      */
     private function lookUpPage($strID)
     {
-        $strID = str_replace(array("{{link_url::", "}}"), array("", ""), $strID);
-        $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int) $strID)->fetchAllAssoc();
+        $strID = str_replace(["{{link_url::", "}}"], ["", ""], $strID);
+        $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int)$strID)->fetchAllAssoc();
 
-        if (count($arrPage) == 0)
-        {
-            return array(
+        if (count($arrPage) == 0) {
+            return [
                 "title" => $GLOBALS['TL_LANG']['ERR']['lr_unknownPage'],
-                "link" => ""
-            );
-        }
-        else
-        {
-            return array(
+                "link" => "",
+            ];
+        } else {
+            return [
                 "title" => $arrPage[0]["title"] . ((strlen($arrPage[0]["pageTitle"]) != 0) ? " - " . $arrPage[0]["pageTitle"] : ""),
-                "link" => $this->generateFrontendUrl($arrPage[0])
-            );
+                "link" => $this->generateFrontendUrl($arrPage[0]),
+            ];
         }
     }
 
