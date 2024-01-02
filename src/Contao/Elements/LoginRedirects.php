@@ -41,7 +41,7 @@ class LoginRedirects extends ContentElement
     {
         // If backendmode shows widlcard.
         if (TL_MODE == 'BE') {
-            $arrRedirect = deserialize($this->lr_choose_redirect);
+            $arrRedirect = StringUtil::deserialize($this->lr_choose_redirect, true);
 
             $arrWildcard = [];
             $i = 0;
