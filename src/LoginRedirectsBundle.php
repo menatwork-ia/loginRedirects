@@ -13,6 +13,7 @@ namespace MenAtWork\LoginRedirectsBundle;
 
 use MenAtWork\LoginRedirectsBundle\DependencyInjection\LoginRedirectsExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
@@ -28,7 +29,7 @@ class LoginRedirectsBundle extends Bundle
     /**
      * {@inheritdoc}
      */
-    public function getContainerExtension()
+    public function getContainerExtension(): ?ExtensionInterface
     {
         return new LoginRedirectsExtension();
     }

@@ -10,9 +10,12 @@
  */
 
 namespace MenAtWork\LoginRedirectsBundle\Contao\Elements;
-use BackendTemplate;
-use ContentElement;
-use StringUtil;
+
+
+use Contao\BackendTemplate;
+use Contao\ContentElement;
+use Contao\Database;
+use Contao\StringUtil;
 
 /**
  * Contao Open Source CMS
@@ -24,9 +27,8 @@ use StringUtil;
  */
 class LoginRedirects extends ContentElement
 {
-
     /**
-     * Tempate var
+     * Template var
      *
      * @var string
      */
@@ -44,7 +46,7 @@ class LoginRedirects extends ContentElement
             $arrRedirect = StringUtil::deserialize($this->lr_choose_redirect, true);
 
             $arrWildcard = [];
-            $i = 0;
+            $i           = 0;
 
             $arrWildcard[] = '### LOGIN REDIRECTS ###';
             $arrWildcard[] = '<br /><br />';
@@ -84,9 +86,9 @@ class LoginRedirects extends ContentElement
             $objTemplate = new BackendTemplate('be_wildcard');
 
             $objTemplate->wildcard = implode("\n", $arrWildcard);
-            $objTemplate->title = $this->headline;
-            $objTemplate->id = $this->id;
-            $objTemplate->link = $this->name;
+            $objTemplate->title    = $this->headline;
+            $objTemplate->id       = $this->id;
+            $objTemplate->link     = $this->name;
 
             return $objTemplate->parse();
         }
@@ -106,7 +108,9 @@ class LoginRedirects extends ContentElement
         $arrRedirect = StringUtil::deserialize($this->lr_choose_redirect, true);
 
         //return if the array is empty
-        if (count($arrRedirect) == 0) return;
+        if (count($arrRedirect) == 0) {
+            return;
+        }
 
         // Get usergroups
         $arrCurrentGroups = (is_array($this->User->groups)) ? $this->User->groups : [];
@@ -114,24 +118,32 @@ class LoginRedirects extends ContentElement
         // Build group and members array
         foreach ($arrRedirect as $key => $value) {
             $redirect = false;
-            $arrId = explode("::", $value['lr_id']);
+            $arrId    = explode("::", $value['lr_id']);
 
             switch ($arrId[0]) {
                 case 'G':
                     //redirect if the user is in the correct group
-                    if (in_array($arrId[1], $arrCurrentGroups)) $redirect = true;
+                    if (in_array($arrId[1], $arrCurrentGroups)) {
+                        $redirect = true;
+                    }
                     break;
                 case 'M':
                     //redirect if the FE-User id is found
-                    if ($this->User->id == $arrId[1]) $redirect = true;
+                    if ($this->User->id == $arrId[1]) {
+                        $redirect = true;
+                    }
                     break;
                 case 'allmembers':
                     //redirect if we have a valid FE-User
-                    if ($this->User->id != '') $redirect = true;
+                    if ($this->User->id != '') {
+                        $redirect = true;
+                    }
                     break;
                 case 'guestsonly':
                     //skip loop if we have a user-id
-                    if ($this->User->id == '') $redirect = true;
+                    if ($this->User->id == '') {
+                        $redirect = true;
+                    }
                     break;
                 case 'all':
                     //no test, just redirect:)
@@ -143,7 +155,11 @@ class LoginRedirects extends ContentElement
                 // Get ID for page
                 $intPage = str_replace(["{{link_url::", "}}"], ["", ""], $value["lr_redirecturl"]);
                 // Load Page
-                $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int)$intPage)->fetchAllAssoc();
+                $arrPage = Database::getInstance()
+                                   ->prepare("SELECT * FROM tl_page WHERE id=?")
+                                   ->execute((int) $intPage)
+                                   ->fetchAllAssoc()
+                ;
 
                 //Check if we have a page
                 if (count($arrPage) == 0) {
@@ -170,10 +186,12 @@ class LoginRedirects extends ContentElement
 
     /**
      * Look up a member name or group name
-     * @param string $strID
+     *
+     * @param string|int $strID
+     *
      * @return string
      */
-    private function lookUpName($strID)
+    private function lookUpName(string|int $strID): string
     {
         switch ($strID) {
             case 'all':
@@ -186,7 +204,11 @@ class LoginRedirects extends ContentElement
                 if ($strID[0] == "M") {
                     $strID = $strID[1];
 
-                    $objUser = $this->Database->prepare("SELECT * FROM tl_member WHERE id=?")->limit(1)->execute($strID);
+                    $objUser = Database::getInstance()
+                                       ->prepare("SELECT * FROM tl_member WHERE id=?")
+                                       ->limit(1)
+                                       ->execute($strID)
+                    ;
 
                     if ($objUser->numRows == 0) {
                         return $GLOBALS['TL_LANG']['ERR']['lr_unknownMember'];
@@ -197,46 +219,51 @@ class LoginRedirects extends ContentElement
                             return $objUser->username;
                         }
                     }
-                } else if ($strID[0] == "G") {
-                    $strID = $strID = $strID[1];
+                } else {
+                    if ($strID[0] == "G") {
+                        $strID = $strID = $strID[1];
 
-                    $objGroup = $this->Database->prepare("SELECT * FROM tl_member_group WHERE id=?")->limit(1)->execute($strID);
+                        $objGroup = Database::getInstance()
+                                            ->prepare("SELECT * FROM tl_member_group WHERE id=?")
+                                            ->limit(1)
+                                            ->execute($strID)
+                        ;
 
-                    if ($objGroup->numRows == 0) {
-                        return $GLOBALS['TL_LANG']['ERR']['lr_unknownGroup'];
-                    } else {
-                        return $objGroup->name;
+                        if ($objGroup->numRows == 0) {
+                            return $GLOBALS['TL_LANG']['ERR']['lr_unknownGroup'];
+                        } else {
+                            return $objGroup->name;
+                        }
                     }
                 }
                 break;
         }
+
         return $GLOBALS['TL_LANG']['ERR']['lr_unknownType'];
     }
 
     /**
      * Look up a page title
      *
-     * @param string $strID
-     * @return string
+     * @param string|int $strID
+     *
+     * @return array
      */
-    private function lookUpPage($strID)
+    private function lookUpPage(string|int $strID): array
     {
-        $strID = str_replace(["{{link_url::", "}}"], ["", ""], $strID);
-        $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int)$strID)->fetchAllAssoc();
+        $strID   = str_replace(["{{link_url::", "}}"], ["", ""], $strID);
+        $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int) $strID)->fetchAllAssoc();
 
         if (count($arrPage) == 0) {
             return [
                 "title" => $GLOBALS['TL_LANG']['ERR']['lr_unknownPage'],
-                "link" => "",
+                "link"  => "",
             ];
         } else {
             return [
                 "title" => $arrPage[0]["title"] . ((strlen($arrPage[0]["pageTitle"]) != 0) ? " - " . $arrPage[0]["pageTitle"] : ""),
-                "link" => $this->generateFrontendUrl($arrPage[0]),
+                "link"  => $this->generateFrontendUrl($arrPage[0]),
             ];
         }
     }
-
 }
-
-?>
