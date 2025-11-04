@@ -14,6 +14,7 @@ namespace MenAtWork\LoginRedirectsBundle\Contao\Backend;
 use Contao\Backend;
 use Contao\Database;
 use Contao\DataContainer;
+use Contao\Message;
 use Contao\StringUtil;
 
 /**
@@ -27,7 +28,7 @@ class Callbacks extends Backend
      *
      * @return array
      */
-    public function getSelection()
+    public function getSelection(): array
     {
         $arrReturn               = array();
         $arrReturn["all"]        = $GLOBALS['TL_LANG']['tl_content']['lr_all'];
@@ -71,7 +72,7 @@ class Callbacks extends Backend
      *
      * @return string
      */
-    public function checkSelection($varVal, DataContainer $dc)
+    public function checkSelection(string $varVal, DataContainer $dc): string
     {
         if (!$varVal) {
             return $varVal;
@@ -83,7 +84,7 @@ class Callbacks extends Backend
         // Check duplicates
         foreach ($arrValue as $value) {
             if (in_array($value["lr_id"], $arrValueFound)) {
-                $_SESSION["TL_ERROR"][] = $GLOBALS['TL_LANG']['ERR']['lr_duplicate'];
+                Message::addError($GLOBALS['TL_LANG']['ERR']['lr_duplicate']);
             } else {
                 $arrValueFound[] = $value["lr_id"];
             }

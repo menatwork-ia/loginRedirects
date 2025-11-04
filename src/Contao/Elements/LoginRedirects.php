@@ -14,8 +14,13 @@ namespace MenAtWork\LoginRedirectsBundle\Contao\Elements;
 
 use Contao\BackendTemplate;
 use Contao\ContentElement;
+use Contao\CoreBundle\Monolog\ContaoContext;
 use Contao\Database;
+use Contao\FrontendUser;
 use Contao\StringUtil;
+use Contao\System;
+use Dflydev\DotAccessData\Data;
+use Psr\Log\LogLevel;
 
 /**
  * Contao Open Source CMS
@@ -35,6 +40,42 @@ class LoginRedirects extends ContentElement
     protected $strTemplate = "ce_loginRedirects";
 
     /**
+     * Check if we are in the backend.
+     *
+     * @return bool
+     */
+    private function checkIfBackend(): bool
+    {
+        $requestStack = System::getContainer()->get("request_stack");
+        $scopeMatcher = System::getContainer()->get("contao.routing.scope_matcher");
+        $request      = $requestStack?->getCurrentRequest();
+        if ($request && $scopeMatcher?->isBackendRequest($request)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check and get the FE user.
+     *
+     * @return FrontendUser|null
+     */
+    private function getFrontendUser(): ?FrontendUser
+    {
+        $security = System::getContainer()->get("security.helper");
+        $user     = $security->getUser();
+        if (
+            $user instanceof FrontendUser
+            && $security->isGranted('IS_AUTHENTICATED_REMEMBERED', 'contao_frontend')
+        ) {
+            return $user;
+        }
+
+        return null;
+    }
+
+    /**
      * Backend
      *
      * @return string
@@ -42,7 +83,7 @@ class LoginRedirects extends ContentElement
     public function generate()
     {
         // If backendmode shows widlcard.
-        if (TL_MODE == 'BE') {
+        if ($this->checkIfBackend()) {
             $arrRedirect = StringUtil::deserialize($this->lr_choose_redirect, true);
 
             $arrWildcard = [];
@@ -101,19 +142,14 @@ class LoginRedirects extends ContentElement
      */
     protected function compile()
     {
-        // Import frontenduser
-        $this->import("FrontendUser", 'User');
-
-        // Get settings
+        $feUser      = $this->getFrontendUser();
         $arrRedirect = StringUtil::deserialize($this->lr_choose_redirect, true);
-
-        //return if the array is empty
         if (count($arrRedirect) == 0) {
             return;
         }
 
         // Get usergroups
-        $arrCurrentGroups = (is_array($this->User->groups)) ? $this->User->groups : [];
+        $arrCurrentGroups = (is_array($feUser->groups)) ? $feUser->groups : [];
 
         // Build group and members array
         foreach ($arrRedirect as $key => $value) {
@@ -129,19 +165,19 @@ class LoginRedirects extends ContentElement
                     break;
                 case 'M':
                     //redirect if the FE-User id is found
-                    if ($this->User->id == $arrId[1]) {
+                    if ($feUser->id == $arrId[1]) {
                         $redirect = true;
                     }
                     break;
                 case 'allmembers':
                     //redirect if we have a valid FE-User
-                    if ($this->User->id != '') {
+                    if ($feUser->id != '') {
                         $redirect = true;
                     }
                     break;
                 case 'guestsonly':
                     //skip loop if we have a user-id
-                    if ($this->User->id == '') {
+                    if ($feUser->id == '') {
                         $redirect = true;
                     }
                     break;
@@ -163,21 +199,25 @@ class LoginRedirects extends ContentElement
 
                 //Check if we have a page
                 if (count($arrPage) == 0) {
-                    $this->log("Try to redirect, but the necessary page cannot be found in the database.", __FUNCTION__ . " | " . __CLASS__, TL_ERROR);
+                    $logger = static::getContainer()->get('monolog.logger.contao');
+                    $logger->log(
+                        LogLevel::ERROR,
+                        "Try to redirect, but the necessary page cannot be found in the database.",
+                        array('contao' => new ContaoContext(__FUNCTION__, __CLASS__))
+                    );
                 } else {
                     // Get information form current page.
                     $arrCurrentPage = $GLOBALS['objPage']->row();
 
                     // Check if redirect target and current page are equal.                                    
                     if ($arrCurrentPage['id'] != $arrPage[0]['id']) {
-                        $pageRedirect = $this->replaceInsertTags($value['lr_redirecturl']);
+                        $parser       = System::getContainer()->get('contao.insert_tag.parser');
+                        $pageRedirect = $parser->replace($value['lr_redirecturl']);
                         $this->redirect($pageRedirect);
                     }
                 }
             }
         }
-
-        return;
     }
 
     /** ------------------------------------------------------------------------
@@ -212,28 +252,23 @@ class LoginRedirects extends ContentElement
 
                     if ($objUser->numRows == 0) {
                         return $GLOBALS['TL_LANG']['ERR']['lr_unknownMember'];
+                    } elseif (strlen($objUser->firstname) != 0 && strlen($objUser->lastname) != 0) {
+                        return $objUser->firstname . " " . $objUser->lastname;
                     } else {
-                        if (strlen($objUser->firstname) != 0 && strlen($objUser->lastname) != 0) {
-                            return $objUser->firstname . " " . $objUser->lastname;
-                        } else {
-                            return $objUser->username;
-                        }
+                        return $objUser->username;
                     }
-                } else {
-                    if ($strID[0] == "G") {
-                        $strID = $strID = $strID[1];
+                } elseif ($strID[0] == "G") {
+                    $strID    = $strID[1];
+                    $objGroup = Database::getInstance()
+                                        ->prepare("SELECT * FROM tl_member_group WHERE id=?")
+                                        ->limit(1)
+                                        ->execute($strID)
+                    ;
 
-                        $objGroup = Database::getInstance()
-                                            ->prepare("SELECT * FROM tl_member_group WHERE id=?")
-                                            ->limit(1)
-                                            ->execute($strID)
-                        ;
-
-                        if ($objGroup->numRows == 0) {
-                            return $GLOBALS['TL_LANG']['ERR']['lr_unknownGroup'];
-                        } else {
-                            return $objGroup->name;
-                        }
+                    if ($objGroup->numRows == 0) {
+                        return $GLOBALS['TL_LANG']['ERR']['lr_unknownGroup'];
+                    } else {
+                        return $objGroup->name;
                     }
                 }
                 break;
@@ -252,7 +287,11 @@ class LoginRedirects extends ContentElement
     private function lookUpPage(string|int $strID): array
     {
         $strID   = str_replace(["{{link_url::", "}}"], ["", ""], $strID);
-        $arrPage = $this->Database->prepare("SELECT * FROM tl_page WHERE id=?")->execute((int) $strID)->fetchAllAssoc();
+        $arrPage = Database::getInstance()
+                           ->prepare("SELECT * FROM tl_page WHERE id=?")
+                           ->execute((int) $strID)
+                           ->fetchAllAssoc()
+        ;
 
         if (count($arrPage) == 0) {
             return [
@@ -262,7 +301,7 @@ class LoginRedirects extends ContentElement
         } else {
             return [
                 "title" => $arrPage[0]["title"] . ((strlen($arrPage[0]["pageTitle"]) != 0) ? " - " . $arrPage[0]["pageTitle"] : ""),
-                "link"  => $this->generateFrontendUrl($arrPage[0]),
+                "link"  => \Contao\PageModel::findById($arrPage[0])?->getFrontendUrl(),
             ];
         }
     }
